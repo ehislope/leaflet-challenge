@@ -1,5 +1,6 @@
+// store API link in queryUrl
 var queryUrl ="https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
-
+// create function for marker colors based on depth of earthquake
 function getColor(depth) {
   if (depth > 90) {
     return  '#253494'
@@ -15,7 +16,7 @@ function getColor(depth) {
     return '#ffffcc'};
 }
 
-        // Perform a GET request to the query URL
+// Perform a GET request to the query URL
 d3.json(queryUrl).then(EqData => {
   console.log(EqData);
 
@@ -27,7 +28,7 @@ d3.json(queryUrl).then(EqData => {
 
     var mags = L.geoJSON(earthquakeData, {
     // Define a function we want to run once for each feature in the features array
-    // Give each feature a popup describing the place and time of the earthquake
+    // Give each feature a popup with the magnitude, depth, and location
    onEachFeature : function (feature, layer) {
   
       layer.bindPopup("<p>" + "Magnitude: " + feature.properties.mag +
@@ -53,7 +54,7 @@ d3.json(queryUrl).then(EqData => {
 
 function createMap(mags) {
 
-    // Define streetmap and darkmap layers
+    // Define graymap layer
     var graymap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
       attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
       tileSize: 512,
@@ -68,12 +69,12 @@ function createMap(mags) {
       "Gray Map": graymap,
     };
   
-    // Create overlay object to hold our overlay layer
+    // Create overlay object to hold magnitude layer
     var overlayMap = {
       Magnitudes: mags
     };
   
-    // Create our map, giving it the streetmap and earthquakes layers to display on load
+    // Create our map, giving it the graymap and magnitude layers to display on load
     var myMap = L.map("map", {
       center: [
         14.60,-28.67
@@ -89,6 +90,7 @@ function createMap(mags) {
       collapsed: false
     }).addTo(myMap);
  
+    // create legend
   var legend = L.control({
     position: "bottomright"
   });
@@ -98,8 +100,8 @@ function createMap(mags) {
     var div = L.DomUtil.create("div", "info legend");
 
       grades = [0, 20, 40, 60, 80, 90];
-      
-    // Looping through our intervals to generate a label with a colored square for each interval.
+
+    // Looping through our grades and add color squares based on getColor used for depth
     for (var i = 0; i < grades.length; i++) {
       div.innerHTML += "<i style='background: " + getColor(grades[i] + 1) + "'></i> "
       + grades[i] + (grades[i + 1] ? "&ndash;" + grades[i + 1] + "<br>" : "+");
@@ -107,6 +109,6 @@ function createMap(mags) {
     return div;
   };
 
-  // Finally, we our legend to the map.
+  // add legend to the map.
   legend.addTo(myMap);
 }
